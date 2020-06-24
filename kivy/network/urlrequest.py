@@ -334,7 +334,8 @@ class UrlRequest(Thread):
         if timeout is not None:
             args['timeout'] = timeout
 
-        if ca_file is not None and hasattr(ssl, 'create_default_context'):
+        if (ca_file is not None and hasattr(ssl, 'create_default_context') and
+                parse.scheme == 'https'):
             ctx = ssl.create_default_context(cafile=ca_file)
             ctx.verify_mode = ssl.CERT_REQUIRED
             args['context'] = ctx
@@ -631,12 +632,14 @@ if __name__ == '__main__':
         pprint('Got an error:')
         pprint(error)
 
+    Clock.start_clock()
     req = UrlRequest('https://en.wikipedia.org/w/api.php?format'
         '=json&action=query&titles=Kivy&prop=revisions&rvprop=content',
         on_success, on_error)
     while not req.is_finished:
         sleep(1)
         Clock.tick()
+    Clock.stop_clock()
 
     print('result =', req.result)
     print('error =', req.error)
